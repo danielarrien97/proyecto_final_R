@@ -1,0 +1,150 @@
+---
+title: "Proyecto Final"
+subtitle: "Índice de Desarrollo Humano"
+author: Daniel Arrien
+date: "24/11/2019"
+output: rmdformats::material
+    
+---
+```{r echo=FALSE, include=FALSE}
+#Paquetes
+library(rvest)
+library(ggplot2)
+library(printr)
+library(prettydoc)
+library(rmdformats)
+library(kableExtra)
+library(knitr)
+```
+
+# Expresiones Regulares
+Una expresión regular, abreviada RegEx, es una cadena de texto que permite crear patrones que ayudan a unir, localizar y administrar texto. Las expresiones regulares también se pueden usar en editores de texto para buscar texto dentro de un archivo. Al intentar comprender las expresiones regulares por primera vez, parece que es un idioma diferente. Sin embargo, el dominio de las expresiones regulares pueden ahorrar mucho tiempo si se trabaja con texto o se necesita analizar grandes cantidades de datos.
+
+La primera página a discutir, es [Adictos al Trabajo](https://www.adictosaltrabajo.com/2015/01/29/regexsam/). Este sitio proporciona una pequeña lista de las expresiones regulares más utilizadas. La forma más rápida para aprender a hacer RegEx, es con ejemplos. Esta página es muy útil, ya que proporciona muchos ejemplos y también distintos urls donde indica la fuente e incluso más información. Adicionalmente, muestra dos tablas resumen con distintas fuentes de la sintaxis en RegEx. 
+
+Por otro lado, en el sitio [Desarrollo Web](https://desarrolloweb.com/articulos/2033.php), el formato utilizado es distinto. Para empezar, el documento tiene una peor apariencia y claramente no está ordenado. Entra directo a los ejemplos, sin primero mostrar alguna tabla con la sintaxis que se usa en RegEx. Al final del documento, no concluye nada y simplemente te dirige a otro sitio para continuar viendo información.
+
+De esta manera, considero el primer sitio mejor que el segundo, porque presenta la información más clara, proporciona mejores ejemplos para el uso de RegEx, y también brinda urls para encontrar mucha más información relacionada. 
+
+# Markdown
+Markdown es una forma muy sencilla de agregar formato como encabezados, negrita, cursiva, listas con viñetas, etc. al texto plano. Markdown permite a las personas crear páginas web sin experiencia en HTML. Tiene todas las ventajas del texto plano, pero con el poder organizativo de un procesador de textos. Markdown también permite exportar el trabajo como HTML, PDF, archivo Word, y muchos otros más. 
+
+En el sitio de [RPubs](http://www.rpubs.com/JohanMarin/Rmarkdown), existe un documento Markdown creado por Johan David Marin Benjumea donde explica paso a paso las cosas mas esenciales que se pueden utilizar en un documento de RMarkdown. La página explica tan bien los pasos a seguir, que incluso te hacen crear un primer documento Rmd. 
+
+A diferencia del anterior sitio web, en la página [Genbeta](https://www.genbeta.com/guia-de-inicio/que-es-markdown-para-que-sirve-y-como-usarlo), artículo publicado por Iván Lasso, explican algunas cosas para modificar texto y no se encuentra bien ordenado. La página no cuenta con un índice al principio, lo cual hace difícil entender la base del documento, y también provee muy pocos ejemplos para utilizar.
+
+El primer documento es explicado dentro de un documento Markdown, y por eso se hace mucho más sencillo enteder la codificación. Adicionalmente, al hacerte crear un documento Rmd propio, la primera página obliga al lector a practicar todas las técnicas de markdown. Es por estos motivos que considero [RPubs](http://www.rpubs.com/JohanMarin/Rmarkdown) mucho mejor que [Genbeta](https://www.genbeta.com/guia-de-inicio/que-es-markdown-para-que-sirve-y-como-usarlo) e invitaría a toda persona interesada en aprender markdown a hecharle un vistazo. 
+
+
+# Índice de Desarrollo Humano (IDH) {.tabset .tabset-pills .tabset-fade}
+## Tabla 1
+```{r echo=FALSE, include=FALSE}
+#Tabla
+url.IDH <- "http://www.eustat.eus/elementos/ele0013500/ti_Indice_de_Desarrollo_Humano_por_indicadores_segun_paises_2015/tbl0013566_c.html"
+IDH <- read_html(url.IDH)
+IDH <- html_nodes(IDH, "table")
+length(IDH)
+
+sapply(IDH, class)
+
+sapply(IDH, function(x) dim(html_table(x, fill = TRUE)))
+
+IDH <- html_table(IDH[[1]])
+?html_table
+
+#Se eliminarán las siguientes filas porque no son útiles
+IDH <- IDH[-c(1:3,17,64,72:77),]
+
+#Renombramiento de columnas
+colnames(IDH)
+colnames(IDH)[colnames(IDH) == "X1"] <- "Rank"
+colnames(IDH)[colnames(IDH) == "X2"] <- "Pais"
+colnames(IDH)[colnames(IDH) == "X3"] <- "Indice_DH"
+colnames(IDH)[colnames(IDH) == "X4"] <- "Esperanza_vida"
+colnames(IDH)[colnames(IDH) == "X5"] <- "Anos_esperados_esc"
+colnames(IDH)[colnames(IDH) == "X6"] <- "Anos_promedio_esc"
+colnames(IDH)[colnames(IDH) == "X7"] <- "Renta_nacional"
+
+#Agregando nueva columna "Continente"
+IDH$Continente <- c("Europa","Europa","Oceania","Europa","Europa","Europa","Asia",
+                      "Europa","Asia","Europa","Europa","America","America","Europa",
+                      "Europa","Oceania","Europa","Europa","Asia","Europa","Europa",
+                      "Asia","Asia","Europa","Europa","Europa","Europa","Europa","Europa",
+                      "Europa","Europa","Europa","Europa","Asia","Europa","Europa",
+                      "Asia","Europa","Asia","Asia","Europa","Europa","Asia","America",
+                      "Europa","Europa","America","Asia","Europa","Europa","Europa",
+                      "Europa","Europa","America","America","Asia","Asia","America",
+                      "Europa","Asia","Oceania","Africa","America","Europa","Africa",
+                      "America")
+#Ordenamos las columnas 
+IDH <- IDH[, c(1,2,8,3,4,5,6,7)]
+```
+
+```{r echo=FALSE, include=FALSE}
+#Vemos en la estructura de nuestro data frame que los números están almacenados
+#como character. Por ende, aplicamos un gsub para convertirlos de tipo numérico.
+#Limpieza de la tabla
+str(IDH)
+IDH$Indice_DH <- as.numeric(gsub(",",".", IDH$Indice_DH))
+IDH$Esperanza_vida <- as.numeric(gsub(",",".", IDH$Esperanza_vida))
+IDH$Anos_esperados_esc <- as.numeric(gsub(",",".", IDH$Anos_esperados_esc))
+IDH$Anos_promedio_esc <- as.numeric(gsub(",",".", IDH$Anos_promedio_esc))
+IDH$Renta_nacional <- as.numeric(gsub(",",".", IDH$Renta_nacional))
+
+str(IDH)
+```
+
+```{r echo=FALSE, warning=FALSE}
+rownames(IDH) <- seq(length=nrow(IDH))
+head(IDH) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, font_size = 9)
+```
+* Indice_DH es el Índice de Desarrollo Humano
+* Esperanza_vida medida en años
+* Anos_esperados_esc son el número de años de escolarización que un niño en edad de comenzar la escuela puede esperar recibir
+* Anos_promedio_esc son el número de años que, en promedio, aprobaron las personas de 15 años y más de edad.
+
+El IDH es un indicador que establece las condiciones y la calidad de vida de las personas. Por otro lado, la Renta Nacional Bruta es un indicador muy similar al Producto Interno Bruto. Es un PIB ajustado, que suma toda la producción que hacen las empresas nacionales en el extranjero, y resta todo lo que hacen las empresas extranjeras en territorio nacional.
+
+## Gráfico 1
+```{r echo=FALSE, include=FALSE, message=FALSE, }
+#PSacando el intercepto y la pendiente de los datos del gráfico, para poder utilizarlos
+#en un geom_abline.
+reg <- lm(IDH$Indice_DH ~ IDH$Renta_nacional)
+reg
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+ggplot(IDH, aes(x = Renta_nacional, y = Indice_DH, color = Continente)) + 
+  geom_point() + geom_smooth() + ggtitle("Índice de Desarrollo Humano y Renta Nacional") +
+  labs(x = "Renta Nacional", y = "IDH") + 
+  geom_abline(intercept = 0.814394, slope = 0.001364, col = "violet")
+```
+Este gráfico representa la relación que existe entre el Índice de Desarrollo Humano (eje y), y la Renta Nacional Bruta (eje x) en dólares americanos. 
+
+Como podemos ver, en la mayoría de los países, mientras la Renta Nacional Bruta del país aumenta, la calidad de vida de las personas también aumenta. Es cierto que existen algunos 'outliers', como lo es Qatar (punto verde de la derecha), pero hay una clara correlación lineal entre ambas variables. Qatar tiene una Renta Nacional Bruta muy alta por la producción de petróleo que tiene tanto dentro del país como en el extranjero. 
+
+## Gráfico 2
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+ggplot(IDH, aes(x = Esperanza_vida, y = Indice_DH, color = Continente)) +
+  geom_point() + facet_grid(. ~ Continente) + theme_linedraw() +
+  ggtitle("Índice de Desarrollo Humano y la Esperanza de Vida") +
+  labs(x = "Esperanza de Vida (Años)", y ="IDH")
+```
+En el gráfico 2, se utilizó facetas para poder dividir nuestras variables entre continentes. 
+
+Debido a que nuestra tabla solo contiene los 66 países con IDH más alto, la mayoría de nuestros datos son de Europa, Asia y América, en ese orden. Sin embargo, existe una correlación lineal entre estas dos variables, ya que mientras el IDH sea más alto, la Esperanza de Vida es más alta también.
+
+# Conclusión
+En conclusión, el Índice de Desarrollo Humano, mide el avance conseguido por un país en tres dimensiones básicas: disfrutar de una vida larga y saludable, acceso a educación y nivel de vida digno.
+Es evidente que un pais con una Renta Nacional Bruta alta, puede tener mayor IDH o mayores años de educación. Mientras más desarrollados, en general las variables presentadas serán mayores. El IDH es una variable fundamental para la calificación de un país o región.
+
+
+
+
+
+
+
+
